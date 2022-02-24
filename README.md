@@ -166,4 +166,7 @@
   - name: [fade | radial_gradient] 필수
 
 
+[reference](https://codepen.io/saransh/pen/LYGbwj)
+
+
 ©️ Soju06 - MIT Licence
