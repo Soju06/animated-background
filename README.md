@@ -16,7 +16,7 @@
 
 ## How to use
 
-1. [abg.min.js](raw.github.com/Soju06/animated-background/main/src/abg.min.js) 를 작업 영역에 구성합니다.
+1. [abg.min.js](https://raw.github.com/Soju06/animated-background/main/src/abg.min.js) 를 작업 영역에 구성합니다.
 
 2. 배경 캔버스를 만듭니다.
 
