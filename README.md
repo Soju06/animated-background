@@ -6,17 +6,17 @@
 
 ## Example
 
-[example-star](https://github.com/Soju06/animated-background/example/example-star.html)
+[example-star](https://soju06.github.io/animated-background/example/example-star.html)
 
-[example-down-star](https://github.com/Soju06/animated-background/example/example-down-star.html)
+[example-down-star](https://soju06.github.io/animated-background/example/example-down-star.html)
 
-[example-firefly](https://github.com/Soju06/animated-background/example/example-firefly.html)
+[example-firefly](https://soju06.github.io/animated-background/example/example-firefly.html)
 
-[sample-1](https://github.com/Soju06/animated-background/example/sample-1.html)
+[sample-1](https://soju06.github.io/animated-background/example/sample-1.html)
 
 ## How to use
 
-1. [abg.js]() 를 작업 영역에 구성합니다.
+1. [abg.min.js](raw.github.com/Soju06/animated-background/main/src/abg.min.js) 를 작업 영역에 구성합니다.
 
 2. 배경 캔버스를 만듭니다.
 
