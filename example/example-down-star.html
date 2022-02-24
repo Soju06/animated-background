@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <style>
+        .spaceBackground {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          width: 100%;
+          height: 100%;
+          z-index: -1000;
+          background-color: #000;
+        }
+      </style>
+    </head>
+    <body>
+      <canvas id="background" class="spaceBackground"></canvas>
+      
+      <script src="../src/abg.min.js"></script>
+      <script>
+        animatedCanvas(document.getElementById('background'), {
+            dots: [
+                { size: 1, speed: -0.09, count: 400 },
+                { size: 2, speed: -0.1, count: 100 },
+                { size: 3, speed: -0.2, count: 70 },
+                { size: 4, speed: -0.3, count: 30 }
+            ],
+            dotAlpha: 220,
+            draw: drawFunction('star', undefined, 'radial_gradient')
+        })
+      </script>
+    </body>
+</html>
