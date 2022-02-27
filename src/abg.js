@@ -5,10 +5,18 @@ function animatedCanvas(element, options = undefined) {
     options.draw ??= {}
 
     let view = {
+        _frame_la: 0,
+        _frame_delta: 1000 / 60.0,
+        _viewalpha: 255.0,
+        __fps_tick: 0,
+        __fps: 0,
+        showFps: false,
         width: 0,
         height: 0,
-        scale: 0,
+        scale: 1,
+        speedScale: 1,
         baseSize: options.baseSize ?? 2560 * 1440,
+        baseRefreshRate: 1000 / 100.0,
         element: element,
         context: element.getContext("2d"),
         options: options,
@@ -25,13 +33,25 @@ function animatedCanvas(element, options = undefined) {
             invalidate: options.draw.invalidate,
             draw: options.draw.draw,
             drawBackground: options.draw.drawBackground,
-            animation: function (view) {          
-                requestAnimationFrame(function () {
+            animation: options.draw.animation ?? function () {
+                let now = Date.now(), baseRR = view.baseRefreshRate
+                view.speedScale = (view._frame_delta = Math.min(now - view._frame_la, 999)) / baseRR
+                view._frame_la = now
                 let con = view.context, w = view.width, h = view.height
                 view_draw.drawBackground(view, con, w, h, false)
                 view_draw.draw(view, con, w, h, false)
-                view.draw.animation(view)
-                })
+
+                if (view.showFps) {
+                    if ((view.__fps_tick += 1) >= (1000 / baseRR)) {
+                        view.__fps_tick = 0
+                        view.__fps = Math.round(1000 / view._frame_delta)
+                    }
+                    con.fillStyle = "#888"
+                    con.font = '16px serif';
+                    con.fillText(view.__fps, 10, 16 + 10);
+                }
+                
+                requestAnimationFrame(view_draw.animation)
             }
         }
     }
@@ -44,7 +64,8 @@ function animatedCanvas(element, options = undefined) {
         view_draw.onresize(view)
     }
 
-    view_draw.animation(view)
+    view._frame_la = Date.now()
+    requestAnimationFrame(view_draw.animation)
 }
 
 function drawFunction(name, draw = null, backgroundName = null) {
@@ -70,15 +91,18 @@ function drawFunction(name, draw = null, backgroundName = null) {
                 },
             draw: function (view, con, w, h) {
                 let dots = view._dots
+                let sdelta = view.speedScale
                 for (let dot of dots) {
                     let size = dot.size
                     if (dot.x < -size || dot.y < -size || dot.x > w + size || dot.y > h + size) respawnDot(dot, w, h)
                     
-                    dot.x += dot.speedx
-                    dot.y += dot.speedy
+                    dot.x += dot.speedx * sdelta
+                    dot.y += dot.speedy * sdelta
                     
-                    if (dot.age++ < 255 || view._dotAlpha < 255 || view._viewalpha < 255) 
-                        con.fillStyle = view._dotColor + Math.min(dot.age, view._viewalpha, view._dotAlpha).toString(16).padStart(2, '0')
+                    if (dot.age < 255 || view._dotAlpha < 255 || view._viewalpha < 255) {
+                        if (dot.age < 255) dot.age += sdelta
+                        con.fillStyle = view._dotColor + Math.round(Math.min(dot.age, view._viewalpha, view._dotAlpha)).toString(16).padStart(2, '0')
+                    }
                     else con.fillStyle = view._dotColor
                     con.fillRect(dot.x, dot.y, size, size)
                 }
@@ -100,7 +124,7 @@ function drawFunction(name, draw = null, backgroundName = null) {
 
         function respawnDot(dot, w, h, reset = false) {
             let speed = dot.speed
-            dot.age = reset ? 255 : 0
+            dot.age = reset ? 255.0 : 0.0
             dot.speedx = rand(-speed * 1000, speed * 1000) * 0.001
             dot.speedy = rand(-speed * 1000, speed * 1000) * 0.001
             dot.x = rand(0, w - dot.size) 
@@ -129,11 +153,11 @@ function drawFunction(name, draw = null, backgroundName = null) {
                 let dots = view._dots
                 for (let dot of dots) {
                     let size = dot.size
-                    dot.y -= dot.speed
-                    if (dot.y + size < 0) dot.y = h
-                    if (dot.y > h + size) dot.y = -size
+                    dot.y -= dot.speed * view.speedScale
+                    if (dot.y + size < 0) dot.y += h + size
+                    if (dot.y > h + size) dot.y -= h + (size * 2)
                     if (view._dotAlpha < 255 || view._viewalpha < 255) 
-                    con.fillStyle = view._dotColor + Math.min(255, view._viewalpha, view._dotAlpha).toString(16).padStart(2, '0')
+                        con.fillStyle = view._dotColor + Math.round(Math.min(255, view._viewalpha, view._dotAlpha)).toString(16).padStart(2, '0')
                     else con.fillStyle = view._dotColor
                     con.fillRect(dot.x, dot.y, size, size)
                 }
@@ -170,9 +194,9 @@ function drawBackgroundFunction(name) {
         if (flags.includes('fade'))
             return function (view, con, w, h, reset = false) {
                 if (!view._viewalpha || reset) view._viewalpha = 0
-                let alpha = ''
+                let alpha = '', sdelta = view.speedScale
                 if (view._viewalpha < 255) {
-                    alpha = Math.round(Math.min(view._viewalpha += (view.options.fadeSpeed ?? 1), 255))
+                    alpha = Math.round(Math.min(view._viewalpha += ((view.options.fadeSpeed ?? 1) * sdelta), 255))
                         .toString(16).padStart(2, '0')
                 }
                 let g = con.createRadialGradient(w / 2, h / 2, (w + h) / 6, w / 2, h / 2, h)
